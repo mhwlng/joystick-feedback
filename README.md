@@ -18,7 +18,7 @@ By removing the spring, you won't feel the center anymore.
 There is no mechanical center detent.
 That's what the LED and increased deadzone is for.
 
-In addition, this tool adds an audible cue, that have have entered or exited the y-axis deadzone.
+In addition, this tool adds an audible cue, that you have entered or exited the y-axis deadzone.
 
 You don't have to remove the y-axis spring, if you, for example, turn flight assist mode off in Elite Dangerous or use cruise control in star citizen.
 But, I like to have more of a conventional throttle feel..
