@@ -66,12 +66,6 @@ My setup :
 
 ![setup1](https://i.imgur.com/K4zZG9U.png)
 
-Note that I updated both joysticks to the latest firmware.
-
-I don't know if this will work, if you have a much older firmware version?
-
-for completion:
-
 I increased the y-axis deadband from 0.5% to 5% on the profile\axes\logical axes screen. (You need to uncheck the 2D checkbox)
 
 My setup :
