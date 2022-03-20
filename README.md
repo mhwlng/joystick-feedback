@@ -3,6 +3,7 @@
 This tool plays a user configurable sound, when entering and exiting the deadzone of a joystick's y-axis.
 
 This is for use with my VKB kosmosima joystick with omni-throttle adapter on a gunfighter base, that has the y-axis spring removed.
+This joystick is now used as a throttle with 3 degrees of freedom.
 
 I changed the cams to 'space soft center' and changed to #10 springs.
 
