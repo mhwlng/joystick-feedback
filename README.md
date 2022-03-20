@@ -2,7 +2,7 @@
 
 This tool plays a user configurable sound, when entering and exiting the deadzone of a joystick's y-axis.
 
-This is for use with my vkb kosmosima joystick with omni-throttle adapter on a gunfighter base, that has the y-axis spring removed.
+This is for use with my VKB kosmosima joystick with omni-throttle adapter on a gunfighter base, that has the y-axis spring removed.
 
 I changed the cams to 'space soft center' and changed to #10 springs.
 
@@ -64,7 +64,7 @@ Start VKBDevCfg-C and go to Global\External\LEDs and add a new entry for the Axi
 
 My setup :
 
-https://i.imgur.com/K4zZG9U.png
+![setup1](https://i.imgur.com/K4zZG9U.png)
 
 Note that I updated both joysticks to the latest firmware.
 
@@ -76,6 +76,6 @@ I increased the y-axis deadband from 0.5% to 5% on the profile\axes\logical axes
 
 My setup :
 
-https://i.imgur.com/W1ZH353.png
+![setup2](https://i.imgur.com/W1ZH353.png)
 
 
