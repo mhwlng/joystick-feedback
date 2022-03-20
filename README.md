@@ -44,7 +44,7 @@ https://vkbcontrollers.com/wp-content/uploads/2019/02/VKB_JoyTester.zip
 
 ![vkb_joytester](https://i.imgur.com/GqW3RHk.pnghttps://i.imgur.com/GqW3RHk.png)
 
-The deadband lies between 32767 - Deadband and 32767 + Deadband
+The deadzone lies between 32767 - Deadband and 32767 + Deadband
 
 The sounds can be changed or disabled by editing the 'InYDeadzoneSound' and 'OutYDeadzoneSound' key in appsettings.config
 
