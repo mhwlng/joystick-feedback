@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Hardcodet.Wpf.TaskbarNotification;
 using joystick_feedback.Audio;
 using log4net;
+using Newtonsoft.Json;
 using SharpDX.DirectInput;
 
 // ReSharper disable StringLiteralTypo
@@ -18,62 +22,65 @@ using SharpDX.DirectInput;
 namespace joystick_feedback
 {
 
+    public class AxisData
+    {
+        public int Deadband { get; set; }
+        public string InDeadzoneSoundFile { get; set; }
+        public string OutDeadzoneSoundFile { get; set; }
+
+        [JsonIgnore]
+        public CachedSound InDeadzoneSound { get; set; }
+        [JsonIgnore]
+        public CachedSound OutDeadzoneSound { get; set; }
+
+    }
+    public class JoystickData
+    {
+        public string PID { get; set; }
+        public string VID { get; set; }
+
+        public AxisData X { get; set; }
+        public AxisData Y { get; set; }
+        public AxisData Z { get; set; }
+
+        [JsonIgnore]
+        public Joystick Joystick { get; set; }
+        [JsonIgnore]
+        public Task JoystickTask { get; set; }
+        [JsonIgnore]
+        public CancellationTokenSource JoystickTokenSource = new CancellationTokenSource();
+
+    }
 
     public partial class App : Application
     {
         public static bool IsShuttingDown { get; set; }
 
-        private static Task _joystickTask;
-        private static CancellationTokenSource _joystickTokenSource = new CancellationTokenSource();
-
         private static Mutex _mutex;
 
         private TaskbarIcon _notifyIcon;
         
+        private List<JoystickData> JoystickList = new List<JoystickData>();
+
         public static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
 
         // Initialize DirectInput
         private static readonly DirectInput DirectInput = new DirectInput();
 
-        private static Joystick _joystick;
-
-        private static string _pid;
-        private static string _vid;
-        private static int _deadband;
-
         public static string ExePath;
 
-        private static CachedSound _inYDeadzoneSound = null;
-        private static CachedSound _outYDeadzoneSound = null;
-
-        public static void PlayInYDeadzoneSound()
+        public static void PlayDeadzoneSound(CachedSound deadzoneSound)
         {
-            if (_inYDeadzoneSound != null)
+            if (deadzoneSound != null)
             {
                 try
                 {
-                    AudioPlaybackEngine.Instance.PlaySound(_inYDeadzoneSound);
+                    AudioPlaybackEngine.Instance.PlaySound(deadzoneSound);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error( $"PlayInYDeadzoneSound: {ex}");
-                }
-            }
-        }
-
-        public static void PlayOutYDeadzoneSound()
-        {
-            if (_outYDeadzoneSound != null)
-            {
-                try
-                {
-                    AudioPlaybackEngine.Instance.PlaySound(_outYDeadzoneSound);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"PlayOutYDeadzoneSound: {ex}");
+                    Log.Error( $"PlayDeadzoneSound: {ex}");
                 }
             }
         }
@@ -83,9 +90,6 @@ namespace joystick_feedback
             var strExeFilePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             ExePath = Path.GetDirectoryName(strExeFilePath);
         }
-
-
-
         private static void RunProcess(string fileName)
         {
             var process = new Process();
@@ -95,7 +99,6 @@ namespace joystick_feedback
             process.Start();
             process.WaitForExit();
         }
-
         private static void MigrateSettings()
         {
             try
@@ -112,7 +115,6 @@ namespace joystick_feedback
                 // ignored
             }
         }
-
 
         void AppDomainUnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs ea)
         {
@@ -159,42 +161,14 @@ namespace joystick_feedback
             log4net.Config.XmlConfigurator.Configure();
 
             MigrateSettings();
-            
-            _inYDeadzoneSound = null;
-            _outYDeadzoneSound = null;
 
-            if (File.Exists(Path.Combine(ExePath, "appSettings.config")) &&
-                ConfigurationManager.GetSection("appSettings") is NameValueCollection appSection)
+            var buttonPath = Path.Combine(ExePath, "Data\\Joysticks\\");
+
+            var fileEntries = Directory.GetFiles(buttonPath);
+            foreach (var fileName in fileEntries)
             {
-                if (File.Exists(Path.Combine(ExePath, "Sounds", appSection["InYDeadzoneSound"])))
-                {
-                    try
-                    {
-                        _inYDeadzoneSound = new CachedSound(Path.Combine(ExePath, "Sounds", appSection["InYDeadzoneSound"]));
-                    }
-                    catch (Exception ex)
-                    {
-                        _inYDeadzoneSound = null;
-
-                        Log.Error($"CachedSound: {ex}");
-                    }
-
-                }
-
-                if (File.Exists(Path.Combine(ExePath, "Sounds", appSection["OutYDeadzoneSound"])))
-                {
-                    try
-                    {
-                        _outYDeadzoneSound = new CachedSound(Path.Combine(ExePath, "Sounds", appSection["OutYDeadzoneSound"]));
-                    }
-                    catch (Exception ex)
-                    {
-                        _outYDeadzoneSound = null;
-
-                        Log.Error($"CachedSound: {ex}");
-                    }
-
-                }
+                JoystickList.Add(JsonConvert
+                    .DeserializeObject<JoystickData>(File.ReadAllText(fileName)));
             }
 
             //create the notifyicon (it's a resource declared in NotifyIconResources.xaml
@@ -209,111 +183,257 @@ namespace joystick_feedback
             Task.Run(() =>
             {
 
-                if (File.Exists(Path.Combine(ExePath, "joystickSettings.config")) && ConfigurationManager.GetSection("joystickSettings") is NameValueCollection joystickSection)
+                splashScreen.Dispatcher.Invoke(() =>
+                    splashScreen.ProgressText.Text = "Looking for Joystick...");
+
+                foreach (var deviceInstance in DirectInput.GetDevices())
                 {
-                    _pid = joystickSection["PID"];
-                    _vid = joystickSection["VID"];
-                    
-                    _deadband = Convert.ToInt32(joystickSection["Deadband"]);
 
-                    if (!string.IsNullOrEmpty(_pid) && !string.IsNullOrEmpty(_vid))
+                    //Device = 17,
+                    //Mouse = 18,
+                    //Keyboard = 19,
+
+                    //Joystick = 20,
+                    //Gamepad = 21,
+                    //Driving = 22,
+                    //Flight = 23,
+                    //FirstPerson = 24,
+
+                    //ControlDevice = 25,
+                    //ScreenPointer = 26,
+                    //Remote = 27,
+                    //Supplemental = 28
+
+                    if (deviceInstance.Type >= DeviceType.Joystick &&
+                        deviceInstance.Type <= DeviceType.FirstPerson)
                     {
-                        splashScreen.Dispatcher.Invoke(() => splashScreen.ProgressText.Text = "Looking for Joystick...");
+                        Log.Info("PID:" + deviceInstance.ProductGuid.ToString().Substring(0, 4) + " - VID:" +
+                                 deviceInstance.ProductGuid.ToString().Substring(4, 4) + " - " +
+                                 deviceInstance.Type.ToString().PadRight(11) + " - " +
+                                 deviceInstance.ProductGuid + " - " + deviceInstance.InstanceGuid + " - " +
+                                 deviceInstance.InstanceName.Trim().Replace("\0", ""));
 
-                        Log.Info($"Looking for directinput devices with PID={_pid} and VID={_vid}");
+                        var joystick = JoystickList.FirstOrDefault(x => x.Joystick == null && deviceInstance.ProductGuid.ToString().ToUpper().StartsWith(x.PID.ToUpper() + x.VID.ToUpper()));
 
-
-                        foreach (var deviceInstance in DirectInput.GetDevices())
+                        if (joystick != null)
                         {
+                            Log.Info(
+                                $"Using Joystick {deviceInstance.InstanceName.Trim().Replace("\0", "")} with Instance Guid {deviceInstance.InstanceGuid}");
 
-                            //Device = 17,
-                            //Mouse = 18,
-                            //Keyboard = 19,
-
-                            //Joystick = 20,
-                            //Gamepad = 21,
-                            //Driving = 22,
-                            //Flight = 23,
-                            //FirstPerson = 24,
-
-                            //ControlDevice = 25,
-                            //ScreenPointer = 26,
-                            //Remote = 27,
-                            //Supplemental = 28
-
-                            if (deviceInstance.Type >= DeviceType.Joystick &&
-                                deviceInstance.Type <= DeviceType.FirstPerson)
+                            if (!string.IsNullOrEmpty(joystick.Y?.InDeadzoneSoundFile) &&
+                                File.Exists(Path.Combine(ExePath, "Sounds", joystick.Y.InDeadzoneSoundFile)))
                             {
-                                Log.Info("PID:" + deviceInstance.ProductGuid.ToString().Substring(0, 4) + " - VID:" +
-                                         deviceInstance.ProductGuid.ToString().Substring(4, 4) + " - " +
-                                         deviceInstance.Type.ToString().PadRight(11) + " - " +
-                                         deviceInstance.ProductGuid + " - " + deviceInstance.InstanceGuid + " - " +
-                                         deviceInstance.InstanceName.Trim().Replace("\0", ""));
-
-                                if (_joystick == null &&
-                                    deviceInstance.ProductGuid.ToString().ToUpper().StartsWith(_pid.ToUpper() + _vid.ToUpper()))
+                                try
                                 {
-                                    Log.Info(
-                                        $"Using Joystick {deviceInstance.InstanceName.Trim().Replace("\0", "")} with Instance Guid {deviceInstance.InstanceGuid}");
+                                    joystick.Y.InDeadzoneSound =
+                                        new CachedSound(Path.Combine(ExePath, "Sounds",
+                                            joystick.Y.InDeadzoneSoundFile));
+                                }
+                                catch (Exception ex)
+                                {
+                                    joystick.Y.InDeadzoneSound = null;
 
-                                    _joystick = new Joystick(DirectInput, deviceInstance.InstanceGuid);
-
-                                    //joystick.Properties.BufferSize = 128;
-
-                                    /*
-                                    joystick.SetCooperativeLevel(wih,
-                                      CooperativeLevel.Background | CooperativeLevel.NonExclusive);*/
-
-                                    _joystick.Acquire();
-
-                                    var joystickToken = _joystickTokenSource.Token;
-
-                                    var lastY = -1;
-
-                                    _joystickTask = Task.Run(async () =>
-                                    {
-                                        Log.Info("joystick task started");
-
-                                        while (true)
-                                        {
-                                            if (joystickToken.IsCancellationRequested)
-                                            {
-                                                joystickToken.ThrowIfCancellationRequested();
-                                            }
-
-                                            _joystick.Poll();
-
-                                            var state = _joystick.GetCurrentState();
-
-                                            // y axis of vkb joystick with 5% deadband configured in the joystick  : 0 - 30750 32767  34370 - 65535
-                                            
-                                            if  (!lastY.IsBetweenII(32767-_deadband,32767+_deadband) && state.Y.IsBetweenEE(32767-_deadband,32767+_deadband))
-                                            {
-                                                //Log.Info($"{state.Y}");
-                                                PlayInYDeadzoneSound();
-                                            }
-                                            else if (lastY.IsBetweenII(32767 - _deadband, 32767 + _deadband) && !state.Y.IsBetweenEE(32767 - _deadband, 32767 + _deadband))
-                                            
-                                            {
-                                                //Log.Info($"{state.Y}");
-                                                PlayOutYDeadzoneSound();
-                                            }
-
-                                            lastY = state.Y;
-
-                                            await Task.Delay(50, _joystickTokenSource.Token);
-                                        }
-
-                                    }, joystickToken);
+                                    Log.Error($"CachedSound: {ex}");
                                 }
                             }
-                        }
 
-                        if (_joystick == null)
-                        {
-                            Log.Info($"No joystick found with PID={_pid} and VID={_vid}");
+                            if (!string.IsNullOrEmpty(joystick.Y?.OutDeadzoneSoundFile) &&
+                                File.Exists(Path.Combine(ExePath, "Sounds", joystick.Y.OutDeadzoneSoundFile)))
+                            {
+                                try
+                                {
+                                    joystick.Y.OutDeadzoneSound =
+                                        new CachedSound(Path.Combine(ExePath, "Sounds",
+                                            joystick.Y.OutDeadzoneSoundFile));
+                                }
+                                catch (Exception ex)
+                                {
+                                    joystick.Y.OutDeadzoneSound = null;
+
+                                    Log.Error($"CachedSound: {ex}");
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(joystick.X?.InDeadzoneSoundFile) &&
+                                File.Exists(Path.Combine(ExePath, "Sounds", joystick.X.InDeadzoneSoundFile)))
+                            {
+                                try
+                                {
+                                    joystick.X.InDeadzoneSound =
+                                        new CachedSound(Path.Combine(ExePath, "Sounds",
+                                            joystick.X.InDeadzoneSoundFile));
+                                }
+                                catch (Exception ex)
+                                {
+                                    joystick.X.InDeadzoneSound = null;
+
+                                    Log.Error($"CachedSound: {ex}");
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(joystick.X?.OutDeadzoneSoundFile) &&
+                                File.Exists(Path.Combine(ExePath, "Sounds", joystick.X.OutDeadzoneSoundFile)))
+                            {
+                                try
+                                {
+                                    joystick.X.OutDeadzoneSound =
+                                        new CachedSound(Path.Combine(ExePath, "Sounds",
+                                            joystick.X.OutDeadzoneSoundFile));
+                                }
+                                catch (Exception ex)
+                                {
+                                    joystick.X.OutDeadzoneSound = null;
+
+                                    Log.Error($"CachedSound: {ex}");
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(joystick.Z?.InDeadzoneSoundFile) &&
+                                File.Exists(Path.Combine(ExePath, "Sounds", joystick.Z.InDeadzoneSoundFile)))
+                            {
+                                try
+                                {
+                                    joystick.Z.InDeadzoneSound =
+                                        new CachedSound(Path.Combine(ExePath, "Sounds",
+                                            joystick.Z.InDeadzoneSoundFile));
+                                }
+                                catch (Exception ex)
+                                {
+                                    joystick.Z.InDeadzoneSound = null;
+
+                                    Log.Error($"CachedSound: {ex}");
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(joystick.Z?.OutDeadzoneSoundFile) &&
+                                File.Exists(Path.Combine(ExePath, "Sounds", joystick.Z.OutDeadzoneSoundFile)))
+                            {
+                                try
+                                {
+                                    joystick.Z.OutDeadzoneSound =
+                                        new CachedSound(Path.Combine(ExePath, "Sounds",
+                                            joystick.Z.OutDeadzoneSoundFile));
+                                }
+                                catch (Exception ex)
+                                {
+                                    joystick.Z.OutDeadzoneSound = null;
+
+                                    Log.Error($"CachedSound: {ex}");
+                                }
+                            }
+
+                            joystick.Joystick = new Joystick(DirectInput, deviceInstance.InstanceGuid);
+
+                            //joystick.Properties.BufferSize = 128;
+
+                            /*
+                            joystick.SetCooperativeLevel(wih,
+                              CooperativeLevel.Background | CooperativeLevel.NonExclusive);*/
+
+                            joystick.Joystick.Acquire();
+
+                            var joystickToken = joystick.JoystickTokenSource.Token;
+
+                            var lastX = -1;
+                            var lastY = -1;
+                            var lastZ = -1;
+
+                            joystick.JoystickTask = Task.Run(async () =>
+                            {
+                                Log.Info(
+                                    $"joystick task started with PID={joystick.PID} and VID={joystick.VID}");
+
+                                while (true)
+                                {
+                                    if (joystickToken.IsCancellationRequested)
+                                    {
+                                        joystickToken.ThrowIfCancellationRequested();
+                                    }
+
+                                    joystick.Joystick.Poll();
+
+                                    var state = joystick.Joystick.GetCurrentState();
+
+                                    // y axis of vkb joystick with 5% deadband configured in the joystick  : 0 - 30750 32767  34370 - 65535
+
+                                    if (joystick.Y?.Deadband > 0)
+                                    {
+                                        if (!lastY.IsBetweenII(32767 - joystick.Y.Deadband,
+                                                32767 + joystick.Y.Deadband) &&
+                                            state.Y.IsBetweenEE(32767 - joystick.Y.Deadband,
+                                                32767 + joystick.Y.Deadband))
+                                        {
+                                            //Log.Info($"{state.Y}");
+                                            PlayDeadzoneSound(joystick.Y.InDeadzoneSound);
+                                        }
+                                        else if (lastY.IsBetweenII(32767 - joystick.Y.Deadband,
+                                                     32767 + joystick.Y.Deadband) &&
+                                                 !state.Y.IsBetweenEE(32767 - joystick.Y.Deadband,
+                                                     32767 + joystick.Y.Deadband))
+
+                                        {
+                                            //Log.Info($"{state.Y}");
+                                            PlayDeadzoneSound(joystick.Y.OutDeadzoneSound);
+                                        }
+                                    }
+
+                                    if (joystick.X?.Deadband > 0)
+                                    {
+                                        if (!lastX.IsBetweenII(32767 - joystick.X.Deadband,
+                                                32767 + joystick.X.Deadband) &&
+                                            state.X.IsBetweenEE(32767 - joystick.X.Deadband,
+                                                32767 + joystick.X.Deadband))
+                                        {
+                                            //Log.Info($"{state.X}");
+                                            PlayDeadzoneSound(joystick.X.InDeadzoneSound);
+                                        }
+                                        else if (lastX.IsBetweenII(32767 - joystick.X.Deadband,
+                                                     32767 + joystick.X.Deadband) &&
+                                                 !state.X.IsBetweenEE(32767 - joystick.X.Deadband,
+                                                     32767 + joystick.X.Deadband))
+
+                                        {
+                                            //Log.Info($"{state.X}");
+                                            PlayDeadzoneSound(joystick.X.OutDeadzoneSound);
+                                        }
+                                    }
+
+                                    if (joystick.Z?.Deadband > 0)
+                                    {
+                                        if (!lastZ.IsBetweenII(32767 - joystick.Z.Deadband,
+                                                32767 + joystick.Z.Deadband) &&
+                                            state.Z.IsBetweenEE(32767 - joystick.Z.Deadband,
+                                                32767 + joystick.Z.Deadband))
+                                        {
+                                            //Log.Info($"{state.Z}");
+                                            PlayDeadzoneSound(joystick.Z.InDeadzoneSound);
+                                        }
+                                        else if (lastZ.IsBetweenII(32767 - joystick.Z.Deadband,
+                                                     32767 + joystick.Z.Deadband) &&
+                                                 !state.Z.IsBetweenEE(32767 - joystick.Z.Deadband,
+                                                     32767 + joystick.Z.Deadband))
+
+                                        {
+                                            //Log.Info($"{state.Z}");
+                                            PlayDeadzoneSound(joystick.Z.OutDeadzoneSound);
+                                        }
+                                    }
+
+                                    lastX = state.X;
+                                    lastY = state.Y;
+                                    lastZ = state.Z;
+
+                                    await Task.Delay(50, joystick.JoystickTokenSource.Token);
+                                }
+
+                            }, joystickToken);
                         }
                     }
+                }
+           
+                foreach (var joystick in JoystickList.Where(x => x.Joystick == null))
+                {
+                    Log.Info($"No joystick found with PID={joystick.PID} and VID={joystick.VID}");
                 }
 
                 Dispatcher.Invoke(() =>
@@ -350,33 +470,32 @@ namespace joystick_feedback
 
         }
       
-
         protected override void OnExit(ExitEventArgs e)
         {
             joystick_feedback.Properties.Settings.Default.Save();
 
             _notifyIcon.Dispose(); //the icon would clean up automatically, but this is cleaner
 
-            if (_joystick != null)
+            foreach (var joystick in JoystickList.Where(x => x.Joystick != null))
             {
-                _joystickTokenSource.Cancel();
+                joystick.JoystickTokenSource.Cancel();
 
-                var joystickToken = _joystickTokenSource.Token;
+                var joystickToken = joystick.JoystickTokenSource.Token;
 
                 try
                 {
-                    _joystickTask?.Wait(joystickToken);
+                    joystick.JoystickTask?.Wait(joystickToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    Log.Info("joystick background task ended");
+                    Log.Info($"joystick background task ended with PID={joystick.PID} and VID={joystick.VID}");
                 }
                 finally
                 {
-                    _joystickTokenSource.Dispose();
+                    joystick.JoystickTokenSource.Dispose();
 
-                    _joystick?.Unacquire();
-                    _joystick?.Dispose();
+                    joystick.Joystick?.Unacquire();
+                    joystick.Joystick?.Dispose();
                 }
             }
 

@@ -1,6 +1,6 @@
 # joystick-feedback
 
-This tool plays a user configurable sound, when entering and exiting the deadzone of a joystick's y-axis.
+This tool plays a user configurable sound, when entering and exiting the deadzone of multiple joystick's X,Y,Z axis.
 
 This is for use with my VKB kosmosima joystick with omni-throttle adapter on a gunfighter base, that has the y-axis spring removed.
 This joystick is now used as a throttle with 3 degrees of freedom.
@@ -27,16 +27,23 @@ But, I like to have more of a conventional throttle feel..
 
 ![joystick](https://i.imgur.com/DiYBuDx.jpg)
 
-The (virtual) joystick is configured via joysticksettings.config
+Each (virtual) joystick is configured via a separate .json file in the Data\Joysticks directory.
 
 ```
-<?xml version="1.0" encoding="utf-8" ?>
-<joystickSettings>
-  <add key="PID" value="0126" />
-  <add key="VID" value="231D" />
-  <add key="Deadband" value="1500" />
-</joystickSettings>
+{
+  "PID": "0127",
+  "VID": "231D",
+
+  "Y": {
+    "Deadband": 1500,
+    "InDeadzoneSoundFile": "63528__florian-reinke__button-off.wav",
+    "OutDeadzoneSoundFile": "beep-3.wav"
+  } 
+
+}
 ```
+
+You can also, optionally, add the same data for X and Z axes.
 
 This is a useful tool, to find out the joystick VID, PID (this tool is not limited to VKB joysticks):
 
@@ -46,10 +53,9 @@ https://vkbcontrollers.com/wp-content/uploads/2019/02/VKB_JoyTester.zip
 
 The deadzone lies between 32767 - Deadband and 32767 + Deadband
 
-The sounds can be changed or disabled by editing the 'InYDeadzoneSound' and 'OutYDeadzoneSound' key in appsettings.config
+The sounds can be changed or disabled by editing the 'InDeadzoneSoundFile' and 'OutDeadzoneSoundFile' fields
 
 Some example sounds can be found in the Sounds directory.
-
 
 # Changes to my VKB kosmosima on a gunfighter base
 

@@ -1,0 +1,11 @@
+{
+  "PID": "0126",
+  "VID": "231D",
+
+  "Y": {
+    "Deadband": 1500,
+    "InDeadzoneSoundFile": "63528__florian-reinke__button-off.wav",
+    "OutDeadzoneSoundFile": "beep-3.wav"
+  }
+  
+}
