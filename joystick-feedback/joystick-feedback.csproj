@@ -124,6 +124,7 @@
     <Compile Include="Audio\AutoDisposeFileReader.cs" />
     <Compile Include="Audio\CachedSound.cs" />
     <Compile Include="Audio\CachedSoundSampleProvider.cs" />
+    <Compile Include="FifoExecution.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -165,9 +166,6 @@
     <None Include="appsettings.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Content Include="Data\Joysticks\kosmosima left.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Data\Joysticks\kosmosima right.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

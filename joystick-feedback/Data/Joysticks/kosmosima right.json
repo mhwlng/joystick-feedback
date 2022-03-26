@@ -6,6 +6,15 @@
     "Deadband": 1500,
     "InDeadzoneSoundFile": "63528__florian-reinke__button-off.wav",
     "OutDeadzoneSoundFile": "beep-3.wav"
+  },
+
+  "Buttons": {
+    "4": {
+      "SoundFile": "63528__florian-reinke__button-off.wav"
+    },
+    "5": {
+      "SoundFile": "63528__florian-reinke__button-off.wav"
+    }
   }
-  
+
 }

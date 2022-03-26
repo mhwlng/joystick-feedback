@@ -1,6 +1,7 @@
 # joystick-feedback
 
 This tool plays a user configurable sound, when entering and exiting the deadzone of multiple joystick's X,Y,Z axis.
+You can also add sounds to joystick buttons.
 
 This is for use with my VKB kosmosima joystick with omni-throttle adapter on a gunfighter base, that has the y-axis spring removed.
 This joystick is now used as a throttle with 3 degrees of freedom.
@@ -31,19 +32,27 @@ Each (virtual) joystick is configured via a separate .json file in the Data\Joys
 
 ```
 {
-  "PID": "0127",
+  "PID": "0126",
   "VID": "231D",
 
   "Y": {
     "Deadband": 1500,
     "InDeadzoneSoundFile": "63528__florian-reinke__button-off.wav",
     "OutDeadzoneSoundFile": "beep-3.wav"
-  } 
+  },
 
+  "Buttons": {
+    "4": {
+      "SoundFile": "63528__florian-reinke__button-off.wav"
+    },
+    "5": {
+      "SoundFile": "63528__florian-reinke__button-off.wav"
+    }
+  }
 }
 ```
 
-You can also, optionally, add the same data for X and Z axes.
+You can also, optionally, add the deadband and sound files for X and Z axes and add sounds to joystick buttons.
 
 This is a useful tool, to find out the joystick VID, PID (this tool is not limited to VKB joysticks):
 
