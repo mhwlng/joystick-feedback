@@ -10,10 +10,28 @@
 
   "Buttons": {
     "4": {
-      "SoundFile": "63528__florian-reinke__button-off.wav"
+      "SoundFile": "63528__florian-reinke__button-off.wav",
+      // turn lights on then off again
+      "EDActions": [
+        "ShipSpotLightToggle-ON",
+        "2000",
+        "ShipSpotLightToggle-OFF"
+      ]
     },
     "5": {
-      "SoundFile": "63528__florian-reinke__button-off.wav"
+      "SoundFile": "63528__florian-reinke__button-off.wav",
+      //trigger discovery scanner bound to secondary fire button on fire group D
+      "EDActions": [
+        "DeployHardpointToggle-ON",
+        "PlayerHUDModeToggle-AM",
+        "FireGroup-D",
+        "SecondaryFire-DOWN",
+        "10000",
+        "SecondaryFire-UP",
+        "FireGroup-A",
+        "PlayerHUDModeToggle-CM",
+        "3000"
+      ]
     }
   }
 

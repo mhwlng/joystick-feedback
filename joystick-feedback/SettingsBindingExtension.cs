@@ -1,8 +1,7 @@
-﻿using System.Windows.Data;
-
+﻿
 namespace joystick_feedback
 {
-    public class SettingBindingExtension : Binding
+    public class SettingBindingExtension : System.Windows.Data.Binding
     {
         public SettingBindingExtension()
         {
@@ -18,7 +17,7 @@ namespace joystick_feedback
         private void Initialize()
         {
             Source = Properties.Settings.Default;
-            Mode = BindingMode.TwoWay;
+            Mode = System.Windows.Data.BindingMode.TwoWay;
         }
     }
 }

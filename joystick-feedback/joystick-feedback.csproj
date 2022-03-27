@@ -124,6 +124,9 @@
     <Compile Include="Audio\AutoDisposeFileReader.cs" />
     <Compile Include="Audio\CachedSound.cs" />
     <Compile Include="Audio\CachedSoundSampleProvider.cs" />
+    <Compile Include="CommandTools.cs" />
+    <Compile Include="EliteData.cs" />
+    <Compile Include="EpicPath.cs" />
     <Compile Include="FifoExecution.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -135,6 +138,8 @@
     <Compile Include="SplashScreenWindow.xaml.cs">
       <DependentUpon>SplashScreenWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SteamPath.cs" />
+    <Compile Include="UserBindings.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -203,6 +208,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\EliteJournalReader\EliteJournalReader.csproj">
+      <Project>{7790285b-e2ee-440b-8ea6-d27bbe6006d9}</Project>
+      <Name>EliteJournalReader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\InputSimulatorPlus\WindowsInput\WindowsInput.csproj">
+      <Project>{3549cd6f-80f8-450f-b99e-cf0a736b1f2a}</Project>
+      <Name>WindowsInput</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
