@@ -176,7 +176,7 @@ These macro function allow the fire buttons to be 'pressed' for a longer time.
 
 These are regular key bindings. 
 You can find more in the .binding file, that are available to be used as macro functions.
-Only a few have been tested, some may not work. 
+Only a few have been tested. Some may not work. 
 Especially the ones that require a key to be pressed for a longer time.
 
 | Function                | Combat     |
