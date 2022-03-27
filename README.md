@@ -115,13 +115,10 @@ My setup :
 
 # Elite Dangerous joystick macro actions
 
-If the macro function is a number, then there will be a delay (unit is milliseconds)
-
-
 **When using Odyssey, the on-foot binding must be 'custom'. (this will happen automatically once you make at least one on-foot keyboard binding)
 If you see a default binding name, then the plugin won't work correctly.**
 
-If nothing happens, when pressing executing macros:
+If nothing happens, when executing macros:
 
 You may see errors like this in the plugin log file :
 
@@ -133,8 +130,10 @@ All keyboard bindings in the .bindings file are available :
 
 `%LocalAppData%\Frontier Developments\Elite Dangerous\Options\Bindings\`
 
+If the macro function is a number, then there will be a delay (the unit is milliseconds)
+
 The following macro functions use the game state. 
-They should not be pressed multiple times in quick succession, because it takes some time for the application to receive the game state change.
+They should not be executed multiple times in quick succession, because it takes some time for the application to receive the game state change.
 
 | Function                | Toggles         |
 | ----------------------- | --------------- |
@@ -166,7 +165,7 @@ They should not be pressed multiple times in quick succession, because it takes 
 | FireGroup-G | Fire Group G |
 | FireGroup-H | Fire Group H |
 
-These macro function allow the fire buttons to be pressed for a longer time. 
+These macro function allow the fire buttons to be 'pressed' for a longer time. 
 
 | Function                | Fire            |
 | ----------------------- | --------------- |
@@ -175,8 +174,8 @@ These macro function allow the fire buttons to be pressed for a longer time.
 | SecondaryFire-DOWN | Secondary Fire Press |
 | SecondaryFire-UP | Seconday Fire Release |
 
-
-These are regular key bindings. You can find more in the .binding file, that can also be used as macro functions.
+These are regular key bindings. 
+You can find more in the .binding file, that can also be used as macro functions.
 Not many have been tested.
 
 | Function                | Combat     |
@@ -289,7 +288,6 @@ Not many have been tested.
 | HumanoidSelectEMPGrenade | Select EMP Grenade |
 | HumanoidSelectShieldGrenade | Select Shield Grenade |
 
-More untested bindings :
 
 | Function                | UI     |
 | ----------------------- | --------------- |
@@ -510,8 +508,6 @@ More untested bindings :
 | SteerRightButton | Steer Right |
 | UIFocus_Buggy | UI Focus |
 | VerticalThrustersButton | Vertical Thrusters |
-
-
 
 
 
