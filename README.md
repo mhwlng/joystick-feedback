@@ -153,6 +153,7 @@ They should not be executed multiple times in quick succession, because it takes
 | NightVisionToggle-OFF | Night Vision Off |
 | ToggleButtonUpInput-ON | Silent Running On |
 | ToggleButtonUpInput-OFF | Silent Running Off |
+| FocusCommsPanel-ON | Comms Panel On |
 | FocusLeftPanel-ON | External Panel On |
 | FocusRadarPanel-ON | Role Panel On |
 | FocusRightPanel-ON | Internal Panel On |
