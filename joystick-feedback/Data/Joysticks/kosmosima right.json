@@ -32,7 +32,19 @@
         "PlayerHUDModeToggle-CM",
         "3000"
       ]
+    },
+
+    "21": {
+      "SoundFile": "63528__florian-reinke__button-off.wav",
+      // open right panel then close it again
+      "EDActions": [
+        "FocusRightPanel-ON",
+        "3000",
+        "UI_Back"
+      ]
     }
+
+
   }
 
 }

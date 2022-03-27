@@ -153,6 +153,11 @@ They should not be executed multiple times in quick succession, because it takes
 | NightVisionToggle-OFF | Night Vision Off |
 | ToggleButtonUpInput-ON | Silent Running On |
 | ToggleButtonUpInput-OFF | Silent Running Off |
+| FocusLeftPanel-ON | External Panel On |
+| FocusRadarPanel-ON | Role Panel On |
+| FocusRightPanel-ON | Internal Panel On |
+| GalaxyMapOpen-ON | Galaxy Map On |
+| SystemMapOpen-ON | System Map On|
 
 | Function                | Fire Groups     |
 | ----------------------- | --------------- |
@@ -178,6 +183,22 @@ These are regular key bindings.
 You can find more in the .binding file, that are available to be used as macro functions.
 Only a few have been tested. Some may not work. 
 Especially the ones that require a key to be pressed for a longer time.
+
+| Function                | UI     |
+| ----------------------- | --------------- |
+| CycleNextPage | Next Page |
+| CycleNextPanel | Next Panel |
+| CyclePreviousPage | Prev Page |
+| CyclePreviousPanel | Prev Panel |
+| UI_Back | UI Back |
+| UI_Down | UI Down |
+| UI_Left | UI Left |
+| UI_Right | UI Right |
+| UI_Select | UI Select |
+| UI_Toggle | UI Toggle |
+| UI_Up | UI Up |
+| PrimaryFire | Primary Fire |
+| SecondaryFire | Secondary Fire |
 
 | Function                | Combat     |
 | ----------------------- | --------------- |
@@ -288,22 +309,6 @@ Especially the ones that require a key to be pressed for a longer time.
 | HumanoidSelectFragGrenade | Select Frag Grenade |
 | HumanoidSelectEMPGrenade | Select EMP Grenade |
 | HumanoidSelectShieldGrenade | Select Shield Grenade |
-
-| Function                | UI     |
-| ----------------------- | --------------- |
-| CycleNextPage | Next Page |
-| CycleNextPanel | Next Panel |
-| CyclePreviousPage | Prev Page |
-| CyclePreviousPanel | Prev Panel |
-| UI_Back | UI Back |
-| UI_Down | UI Down |
-| UI_Left | UI Left |
-| UI_Right | UI Right |
-| UI_Select | UI Select |
-| UI_Toggle | UI Toggle |
-| UI_Up | UI Up |
-| PrimaryFire | Primary Fire |
-| SecondaryFire | Secondary Fire |
 
 | Function                | Ship     |
 | ----------------------- | --------------- |
