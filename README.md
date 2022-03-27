@@ -124,7 +124,7 @@ You may see errors like this in the plugin log file :
 
 `file not found C:\Users\xxx\AppData\Local\Frontier Developments\Elite Dangerous\Options\Bindings\Custom.4.0.binds`
 
-In that case, the application has no access to the bindings directory. Start the applicationas administrator.
+In that case, the application has no access to the bindings directory. Start the application as administrator.
 
 All keyboard bindings in the .bindings file are available :
 
@@ -175,8 +175,9 @@ These macro function allow the fire buttons to be 'pressed' for a longer time.
 | SecondaryFire-UP | Seconday Fire Release |
 
 These are regular key bindings. 
-You can find more in the .binding file, that can also be used as macro functions.
-Not many have been tested.
+You can find more in the .binding file, that are available to be used as macro functions.
+Only a few have been tested, some may not work. 
+Especially the ones that require a key to be pressed for a longer time.
 
 | Function                | Combat     |
 | ----------------------- | --------------- |
@@ -288,7 +289,6 @@ Not many have been tested.
 | HumanoidSelectEMPGrenade | Select EMP Grenade |
 | HumanoidSelectShieldGrenade | Select Shield Grenade |
 
-
 | Function                | UI     |
 | ----------------------- | --------------- |
 | CycleNextPage | Next Page |
@@ -327,36 +327,6 @@ Not many have been tested.
 | HumanoidEmoteWheelButton | Emote Wheel |
 | HumanoidUtilityWheelCycleMode | Cycle Wheel Mode |
 | HumanoidPrimaryFireButton | Primary Fire |
-
-| Function                | Navigation     |
-| ----------------------- | --------------- |
-| BackwardKey | Reverse Thrust |
-| BackwardThrustButton | Reverse thrust |
-| BackwardThrustButton_Landing | Reverse Thrust (Lndg) |
-| DownThrustButton | Thrust Down |
-| DownThrustButton_Landing | Thrust Down (Lndg) |
-| ForwardKey | Forward Thrust |
-| ForwardThrustButton | Forward Thrust |
-| ForwardThrustButton_Landing | Forward Thrust (Lndg) |
-| LeftThrustButton | Thrust Left |
-| LeftThrustButton_Landing | Thrust Left (Lndg) |
-| PitchDownButton | Pitch Down |
-| PitchDownButton_Landing | Pitch Down (Lndg) |
-| PitchUpButton | Pitch Up |
-| PitchUpButton_Landing | Pitch Up (Lndg) |
-| RightThrustButton | Thrust Right |
-| RightThrustButton_Landing | Thrust Right (Lndg) |
-| UpThrustButton | Thrust Up |
-| UpThrustButton_Landing | Thrust Up (Lndg) |
-| YawLeftButton | Yaw Left |
-| YawLeftButton_Landing | Yaw Left (Lndg) |
-| YawRightButton | Yaw Right |
-| YawRightButton_Landing | Yaw Right (Lndg) |
-| YawToRollButton | Yaw To Roll |
-| RollLeftButton | Roll Left |
-| RollLeftButton_Landing | Roll Left (Lndg) |
-| RollRightButton | Roll Right |
-| RollRightButton_Landing | Roll Right (Lndg) |
 
 | Function                | Camera     |
 | ----------------------- | --------------- |
